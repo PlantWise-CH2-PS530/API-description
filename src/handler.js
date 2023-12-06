@@ -55,7 +55,18 @@ const addDescHandler = (request, h) => {
     .code(201);
 };
 
-const getAllDescHandler = () => {};
+const getAllDescHandler = () => {
+  return {
+    status: "success",
+    data: {
+      description: description.map((desc) => ({
+        id: desc.id,
+        name: desc.name,
+        about: desc.about,
+      })),
+    },
+  };
+};
 
 const getDescByIdHandler = (request, h) => {};
 
