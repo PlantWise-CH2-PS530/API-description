@@ -148,7 +148,28 @@ const updateDescHandler = (request, h) => {
     .code(200);
 };
 
-const deleteDescHandler = (request, h) => {};
+const deleteDescHandler = (request, h) => {
+  const { DescId } = request.params;
+  const index = description.findIndex((b) => b.id === DescId);
+
+  if (index === -1) {
+    return h
+      .response({
+        status: "fail",
+        message: "Failed to delete the plant. ID not found",
+      })
+      .code(404);
+  }
+
+  description.splice(index, 1);
+
+  return h
+    .response({
+      status: "success",
+      message: "The plant has been successfully deleted",
+    })
+    .code(200);
+};
 
 module.exports = {
   addDescHandler,
