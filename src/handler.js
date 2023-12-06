@@ -68,7 +68,26 @@ const getAllDescHandler = () => {
   };
 };
 
-const getDescByIdHandler = (request, h) => {};
+const getDescByIdHandler = (request, h) => {
+  const { DescId } = request.params;
+  const desc = description.find((b) => b.id === DescId);
+
+  if (!desc) {
+    return h
+      .response({
+        status: "fail",
+        message: "The plant could not be found!",
+      })
+      .code(404);
+  }
+
+  return {
+    status: "success",
+    data: {
+      desc,
+    },
+  };
+};
 
 const updateDescHandler = (request, h) => {};
 
