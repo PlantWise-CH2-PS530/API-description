@@ -89,7 +89,64 @@ const getDescByIdHandler = (request, h) => {
   };
 };
 
-const updateDescHandler = (request, h) => {};
+const updateDescHandler = (request, h) => {
+  const { DescId } = request.params;
+  const {
+    name,
+    about,
+    soilMoisture,
+    recomFertilize1,
+    recomFertilize2,
+    recomFertilize3,
+    FertilizationRecommendations,
+    difficulty,
+    size,
+    type,
+    watering,
+  } = request.payload;
+
+  if (!name) {
+    return h
+      .response({
+        status: "fail",
+        message: "Failed to update the plant. Please provide the plant name",
+      })
+      .code(400);
+  }
+
+  const index = description.findIndex((b) => b.id === DescId);
+
+  if (index === -1) {
+    return h
+      .response({
+        status: "fail",
+        message: "Failed to update the plant. ID not found",
+      })
+      .code(404);
+  }
+
+  books[index] = {
+    ...description[index],
+    name,
+    about,
+    soilMoisture,
+    recomFertilize1,
+    recomFertilize2,
+    recomFertilize3,
+    FertilizationRecommendations,
+    difficulty,
+    size,
+    type,
+    watering,
+  };
+
+  return h
+    .response({
+      status: "success",
+      message: "The plant has been successfully updated",
+    })
+    .code(200);
+};
 
 const deleteDescHandler = (request, h) => {};
 
