@@ -1,29 +1,29 @@
-const descHandlers = require("./handlers");
+const descHandlers = require("./handler");
 
 const routes = [
   {
     method: "POST",
-    path: "/desc",
+    path: "/description",
     handler: descHandlers.addDescHandler,
   },
   {
     method: "GET",
-    path: "/desc",
+    path: "/description",
     handler: descHandlers.getAllDescHandler,
   },
   {
     method: "GET",
-    path: "/desc/{bookId}",
+    path: "/description/{descId}",
     handler: descHandlers.getDescByIdHandler,
   },
   {
     method: "PUT",
-    path: "/desc/{bookId}",
+    path: "/description/{descId}",
     handler: descHandlers.updateDescHandler,
   },
   {
     method: "DELETE",
-    path: "/desc/{bookId}",
+    path: "/description/{descId}",
     handler: descHandlers.deleteDescHandler,
   },
 ];

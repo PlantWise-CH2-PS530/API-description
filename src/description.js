@@ -1,3 +1,3 @@
-const desc = [];
+const description = [];
 
-module.exports = desc;
+module.exports = description;
