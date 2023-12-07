@@ -1,5 +1,5 @@
 const { nanoid } = require("nanoid");
-const books = require("./description");
+const description = require("./description");
 
 const addDescHandler = (request, h) => {
   const {
@@ -134,7 +134,7 @@ const updateDescHandler = (request, h) => {
       .code(404);
   }
 
-  books[index] = {
+  description[index] = {
     ...description[index],
     name,
     about,
