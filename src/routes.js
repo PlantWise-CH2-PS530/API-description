@@ -13,17 +13,17 @@ const routes = [
   },
   {
     method: "GET",
-    path: "/description/{descId}",
+    path: "/description/{DescId}",
     handler: descHandlers.getDescByIdHandler,
   },
   {
     method: "PUT",
-    path: "/description/{descId}",
+    path: "/description/{DescId}",
     handler: descHandlers.updateDescHandler,
   },
   {
     method: "DELETE",
-    path: "/description/{descId}",
+    path: "/description/{DescId}",
     handler: descHandlers.deleteDescHandler,
   },
 ];
