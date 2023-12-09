@@ -9,7 +9,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const storage = new Storage({
-  keyFilename: "./plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json",
+  keyFilename: "./plantwise-ch2-ps530-5ff2ffa0d81f.json",
 });
 
 const addDescHandler = async (request, h) => {
