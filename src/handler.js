@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 const { Storage } = require("@google-cloud/storage");
 
-const serviceAccount = require("./plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
+const serviceAccount = require("../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -9,14 +9,14 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const storage = new Storage({
-  keyFilename: "./plantwise-ch2-ps530-5ff2ffa0d81f.json",
+  keyFilename: "../config/plantwise-ch2-ps530-5ff2ffa0d81f.json",
+  projectId: "plantwise-ch2-ps530",
 });
 
 const addDescHandler = async (request, h) => {
   try {
     const {
       name,
-      image,
       about,
       nitrogen,
       fosfor,
@@ -59,26 +59,8 @@ const addDescHandler = async (request, h) => {
       size,
       type,
       watering,
+      imageUrl: "",
     });
-
-    if (image) {
-      const fileExt = image.substring(
-        "data:image/".length,
-        image.indexOf(";base64")
-      );
-      const fileName = `images/${id}.${fileExt}`;
-      const imageBuffer = Buffer.from(
-        image.replace(/^data:image\/\w+;base64,/, ""),
-        "base64"
-      );
-
-      await storage
-        .bucket("plantwise-ch2-ps530")
-        .file(fileName)
-        .save(imageBuffer, {
-          contentType: `image/${fileExt}`,
-        });
-    }
 
     return h
       .response({
@@ -137,9 +119,11 @@ const getDescByIdHandler = async (request, h) => {
         .code(404);
     }
 
+    const plantData = doc.data();
+
     return {
       status: "success",
-      data: doc.data(),
+      data: plantData,
     };
   } catch (error) {
     console.error("Error:", error);
@@ -176,6 +160,14 @@ const updateDescHandler = async (request, h) => {
         })
         .code(400);
     }
+
+    if ("imageUrl" in dataToUpdate) {
+      await db.collection("plants").doc(DescId).update({
+        imageUrl: dataToUpdate.imageUrl,
+      });
+    }
+
+    delete dataToUpdate.imageUrl;
 
     await db.collection("plants").doc(DescId).update(dataToUpdate);
 
