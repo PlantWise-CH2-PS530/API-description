@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 const { Storage } = require("@google-cloud/storage");
 
-const serviceAccount = require("./plantwise-ch2-ps530-firebase-adminsdk-cug29-c4c61c9cac.json");
+const serviceAccount = require("../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -9,7 +9,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const storage = new Storage({
-  keyFilename: "./plantwise-ch2-ps530-dbeae5511fcb.json",
+  keyFilename: "../config/plantwise-ch2-ps530-5ff2ffa0d81f.json",
   projectId: "plantwise-ch2-ps530",
 });
 
