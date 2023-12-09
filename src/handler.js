@@ -1,186 +1,218 @@
-const { nanoid } = require("nanoid");
-const description = require("./description");
+const admin = require("firebase-admin");
+const { Storage } = require("@google-cloud/storage");
 
-const addDescHandler = (request, h) => {
-  const {
-    name,
-    about,
-    nitrogen,
-    fosfor,
-    kalium,
-    soilMoisture,
-    recomFertilize1,
-    recomFertilize2,
-    recomFertilize3,
-    FertilizationRecommendations,
-    difficulty,
-    size,
-    type,
-    watering,
-  } = request.payload;
+const serviceAccount = require("./plantwise-ch2-ps530-firebase-adminsdk-cug29-c4c61c9cac.json");
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
-  if (!name) {
+const db = admin.firestore();
+
+const storage = new Storage({
+  keyFilename: "./plantwise-ch2-ps530-dbeae5511fcb.json",
+});
+
+const addDescHandler = async (request, h) => {
+  try {
+    const {
+      name,
+      image,
+      about,
+      nitrogen,
+      fosfor,
+      kalium,
+      soilMoisture,
+      recomFertilize1,
+      recomFertilize2,
+      recomFertilize3,
+      FertilizationRecommendations,
+      difficulty,
+      size,
+      type,
+      watering,
+    } = request.payload;
+
+    if (!name) {
+      return h
+        .response({
+          status: "fail",
+          message: "Failed to add plant. Please provide the plant name",
+        })
+        .code(400);
+    }
+
+    const id = db.collection("plants").doc().id;
+
+    await db.collection("plants").doc(id).set({
+      id,
+      name,
+      about,
+      nitrogen,
+      fosfor,
+      kalium,
+      soilMoisture,
+      recomFertilize1,
+      recomFertilize2,
+      recomFertilize3,
+      FertilizationRecommendations,
+      difficulty,
+      size,
+      type,
+      watering,
+    });
+
+    if (image) {
+      const fileExt = image.substring(
+        "data:image/".length,
+        image.indexOf(";base64")
+      );
+      const fileName = `images/${id}.${fileExt}`;
+      const imageBuffer = Buffer.from(
+        image.replace(/^data:image\/\w+;base64,/, ""),
+        "base64"
+      );
+
+      await storage
+        .bucket("plantwise-ch2-ps530")
+        .file(fileName)
+        .save(imageBuffer, {
+          contentType: `image/${fileExt}`,
+        });
+    }
+
     return h
       .response({
-        status: "fail",
-        message: "Failed to add plant. Please provide the plant name",
+        status: "success",
+        message: "The plant has been successfully added!",
+        data: {
+          DescId: id,
+        },
       })
-      .code(400);
+      .code(201);
+  } catch (error) {
+    console.error("Error:", error);
+    return h
+      .response({
+        status: "error",
+        message: "Internal server error",
+      })
+      .code(500);
   }
+};
 
-  const id = nanoid();
+const getAllDescHandler = async (request, h) => {
+  try {
+    const snapshot = await db.collection("plants").get();
+    const plants = [];
+    snapshot.forEach((doc) => {
+      plants.push(doc.data());
+    });
 
-  const newDesc = {
-    id,
-    name,
-    about,
-    nitrogen,
-    fosfor,
-    kalium,
-    soilMoisture,
-    recomFertilize1,
-    recomFertilize2,
-    recomFertilize3,
-    FertilizationRecommendations,
-    difficulty,
-    size,
-    type,
-    watering,
-  };
-
-  description.push(newDesc);
-
-  return h
-    .response({
+    return {
       status: "success",
-      message: "The plant has been successfully added!",
-      data: {
-        DescId: id,
-      },
-    })
-    .code(201);
-};
-
-const getAllDescHandler = () => {
-  return {
-    status: "success",
-    data: {
-      description: description.map((desc) => ({
-        id: desc.id,
-        name: desc.name,
-        about: desc.about,
-      })),
-    },
-  };
-};
-
-const getDescByIdHandler = (request, h) => {
-  const { DescId } = request.params;
-  const desc = description.find((b) => b.id === DescId);
-
-  if (!desc) {
+      data: plants,
+    };
+  } catch (error) {
+    console.error("Error:", error);
     return h
       .response({
-        status: "fail",
-        message: "The plant could not be found!",
+        status: "error",
+        message: "Internal server error",
       })
-      .code(404);
+      .code(500);
   }
-
-  return {
-    status: "success",
-    data: {
-      desc,
-    },
-  };
 };
 
-const updateDescHandler = (request, h) => {
-  const { DescId } = request.params;
-  const {
-    name,
-    about,
-    nitrogen,
-    fosfor,
-    kalium,
-    soilMoisture,
-    recomFertilize1,
-    recomFertilize2,
-    recomFertilize3,
-    FertilizationRecommendations,
-    difficulty,
-    size,
-    type,
-    watering,
-  } = request.payload;
+const getDescByIdHandler = async (request, h) => {
+  try {
+    const { DescId } = request.params;
+    const doc = await db.collection("plants").doc(DescId).get();
 
-  if (!name) {
+    if (!doc.exists) {
+      return h
+        .response({
+          status: "fail",
+          message: "The plant could not be found!",
+        })
+        .code(404);
+    }
+
+    return {
+      status: "success",
+      data: doc.data(),
+    };
+  } catch (error) {
+    console.error("Error:", error);
     return h
       .response({
-        status: "fail",
-        message: "Failed to update the plant. Please provide the plant name",
+        status: "error",
+        message: "Internal server error",
       })
-      .code(400);
+      .code(500);
   }
+};
 
-  const index = description.findIndex((b) => b.id === DescId);
+const updateDescHandler = async (request, h) => {
+  try {
+    const { DescId } = request.params;
+    const dataToUpdate = request.payload;
 
-  if (index === -1) {
-    return h
-      .response({
-        status: "fail",
-        message: "Failed to update the plant. ID not found",
-      })
-      .code(404);
-  }
+    if (!Object.keys(dataToUpdate).length) {
+      return h
+        .response({
+          status: "fail",
+          message:
+            "Failed to update the plant. Please provide the updated plant data",
+        })
+        .code(400);
+    }
 
-  description[index] = {
-    ...description[index],
-    name,
-    about,
-    nitrogen,
-    fosfor,
-    kalium,
-    soilMoisture,
-    recomFertilize1,
-    recomFertilize2,
-    recomFertilize3,
-    FertilizationRecommendations,
-    difficulty,
-    size,
-    type,
-    watering,
-  };
+    if ("name" in dataToUpdate && !dataToUpdate.name.trim()) {
+      return h
+        .response({
+          status: "fail",
+          message:
+            "Failed to update the plant. Please provide a non-empty plant name",
+        })
+        .code(400);
+    }
 
-  return h
-    .response({
+    await db.collection("plants").doc(DescId).update(dataToUpdate);
+
+    return {
       status: "success",
       message: "The plant has been successfully updated",
-    })
-    .code(200);
-};
-
-const deleteDescHandler = (request, h) => {
-  const { DescId } = request.params;
-  const index = description.findIndex((b) => b.id === DescId);
-
-  if (index === -1) {
+    };
+  } catch (error) {
+    console.error("Error:", error);
     return h
       .response({
-        status: "fail",
-        message: "Failed to delete the plant. ID not found",
+        status: "error",
+        message: "Internal server error",
       })
-      .code(404);
+      .code(500);
   }
+};
 
-  description.splice(index, 1);
+const deleteDescHandler = async (request, h) => {
+  try {
+    const { DescId } = request.params;
 
-  return h
-    .response({
+    await db.collection("plants").doc(DescId).delete();
+
+    return {
       status: "success",
       message: "The plant has been successfully deleted",
-    })
-    .code(200);
+    };
+  } catch (error) {
+    console.error("Error:", error);
+    return h
+      .response({
+        status: "error",
+        message: "Internal server error",
+      })
+      .code(500);
+  }
 };
 
 module.exports = {
