@@ -1,48 +1,40 @@
-const {
-  addNewsHandler,
-  getAllNewsHandler,
-  getNewsByIdHandler,
-  getLatestNewsHandler,
-  getHottestNewsHandler,
-  updateNewsHandler,
-  deleteNewsHandler,
-} = require("./handler");
+const newsHandlers = require("./handler");
 
 const routes = [
   {
     method: "POST",
     path: "/news",
-    handler: addNewsHandler,
+    handler: newsHandlers.addNewsHandler,
   },
   {
     method: "GET",
     path: "/news",
-    handler: getAllNewsHandler,
+    handler: newsHandlers.getAllNewsHandler,
   },
   {
     method: "GET",
     path: "/news/{NewsId}",
-    handler: getNewsByIdHandler,
+    handler: newsHandlers.getNewsByIdHandler,
   },
   {
     method: "GET",
     path: "/latest-news",
-    handler: getLatestNewsHandler,
+    handler: newsHandlers.getLatestNewsHandler,
   },
   {
     method: "GET",
     path: "/hottest-news",
-    handler: getHottestNewsHandler,
+    handler: newsHandlers.getHottestNewsHandler,
   },
   {
     method: "PUT",
     path: "/news/{NewsId}",
-    handler: updateNewsHandler,
+    handler: newsHandlers.updateNewsHandler,
   },
   {
     method: "DELETE",
     path: "/news/{NewsId}",
-    handler: deleteNewsHandler,
+    handler: newsHandlers.deleteNewsHandler,
   },
 ];
 
