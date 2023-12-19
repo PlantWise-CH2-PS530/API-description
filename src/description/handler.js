@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 const { Storage } = require("@google-cloud/storage");
 
-const serviceAccount = require("../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
+const serviceAccount = require("../../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -21,6 +21,7 @@ const addDescHandler = async (request, h) => {
       nitrogen,
       fosfor,
       kalium,
+      ph,
       soilMoisture,
       recomFertilize1,
       recomFertilize2,
@@ -50,6 +51,7 @@ const addDescHandler = async (request, h) => {
       nitrogen,
       fosfor,
       kalium,
+      ph,
       soilMoisture,
       recomFertilize1,
       recomFertilize2,
@@ -151,7 +153,10 @@ const updateDescHandler = async (request, h) => {
         .code(400);
     }
 
-    if ("name" in dataToUpdate && !dataToUpdate.name.trim()) {
+    if (
+      "name" in dataToUpdate &&
+      (!dataToUpdate.name || !dataToUpdate.name.trim())
+    ) {
       return h
         .response({
           status: "fail",
@@ -162,12 +167,33 @@ const updateDescHandler = async (request, h) => {
     }
 
     if ("imageUrl" in dataToUpdate) {
+      const imageUrlKeys = Object.keys(dataToUpdate);
+      if (imageUrlKeys.length !== 1 || imageUrlKeys[0] !== "imageUrl") {
+        return h
+          .response({
+            status: "fail",
+            message:
+              "Failed to update the plant. Please provide only 'imageUrl' data to update",
+          })
+          .code(400);
+      }
+
       await db.collection("plants").doc(DescId).update({
         imageUrl: dataToUpdate.imageUrl,
       });
+
+      return {
+        status: "success",
+        message: "The plant's imageUrl has been successfully updated",
+      };
     }
 
-    delete dataToUpdate.imageUrl;
+    if ("name" in dataToUpdate) {
+      const { name, ...rest } = dataToUpdate;
+      dataToUpdate.name = name.trim();
+      delete rest.name;
+      Object.assign(dataToUpdate, rest);
+    }
 
     await db.collection("plants").doc(DescId).update(dataToUpdate);
 
