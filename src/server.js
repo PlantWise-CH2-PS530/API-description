@@ -4,8 +4,8 @@ const newsRoutes = require("./news/routes");
 
 const init = async () => {
   const server = Hapi.server({
-    port: 9000,
-    host: "localhost",
+    port: process.env.PORT || 8080, // Menggunakan port dari environment variable jika ada, jika tidak, gunakan port 8080
+    host: "0.0.0.0", // Host yang digunakan di GCP
   });
 
   server.route(descriptionRoutes);
