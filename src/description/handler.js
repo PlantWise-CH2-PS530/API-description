@@ -1,7 +1,7 @@
 const admin = require("firebase-admin");
 const { Storage } = require("@google-cloud/storage");
 
-const serviceAccount = require("../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
+const serviceAccount = require("../../config/plantwise-ch2-ps530-firebase-adminsdk-cug29-4e09cfeda1.json");
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
